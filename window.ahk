@@ -3,6 +3,8 @@ Distance := 0
 VDistance := 0
 NewTabNum := 0
 TabNum := 0
+TaskBarHeight := 1
+
 return
 
 ; Console window Visor
@@ -10,6 +12,9 @@ return
 
 !`::
 DetectHiddenWindows On
+SysGet, monitor, MonitorPrimary
+SysGet, size, Monitor, monitor
+
 If WinExist("ahk_class Console_2_Main")
 {
 	IfWinActive
@@ -27,12 +32,13 @@ If WinExist("ahk_class Console_2_Main")
 } 
 Else 
 {
-	Run C:\Program Files (x86)\Console2\Console.exe
+	Run C:\Dropbox\Projects\Consolo\Console2\Console.exe
 	WinWait, Console
 	SysGet, monitor, MonitorPrimary
 	SysGet, size, Monitor, monitor
 	WinGetPos x, y, width, height
-	WinMove, ((sizeRight - sizeLeft)/ 2 - width / 2),-9
+	; WinMove, ((sizeRight - sizeLeft) / 2 - width / 2), -9
+  WinMove 0, -8, sizeRight, height
 }
 return
 
@@ -193,126 +199,70 @@ return
  Else WinMaximize A
 return
 
+
 #Left::
-  aeroTaskBarHeight := 0 ; put here the height of your taskbar
   WinGetTitle, currentWindow, A ; get the active window title
   WinGetPos, aeroX, aeroY, aeroWidth, aeroHeight, A ; get active window x,y,W,H
   WinGet, active_id, ID, A ; get active window ID (like 0xc00dc)
-  newWidth := 1160 ; A_ScreenWidth/3 * 2
+  
+  maxWidth := A_ScreenWidth / 3 * 2
+  medWidth := A_ScreenWidth / 2
+  minWidth := A_ScreenWidth / 3
 
-  ; / if window is already exactly at left
-  if (aeroX=0 && aeroY=0 && aeroWidth=(newWidth) && aeroHeight=(A_ScreenHeight-aeroTaskBarHeight))
+  intendedHeight := (A_ScreenHeight - 1)
+
+  if (aeroX = 0 && aeroY = 0 && aeroHeight = intendedHeight)
   {
-    WinMove, %currentWindow%,, (A_ScreenWidth - newWidth), 0, (newWidth), (A_ScreenHeight-aeroTaskBarHeight)
-  }
-  ; / if window is exactly at right
-  else if (aeroX=(A_ScreenWidth - newWidth) && aeroY=0 && aeroWidth=(newWidth) && aeroHeight=(A_ScreenHeight-aeroTaskBarHeight))
-  {
-    ; / let's check if we have the center position memorized..
-     aeroAlreadyMemorizedAt := 0 ; reset (not found memorized anywhere yet)
-    loop
-      if aeroAllMemorized%A_Index% ; we have to check if active ID already has a memory slot
-      { ; FYI: aeroAllMemorized[1..n] = "ID x y W H"
-        stringsplit, tempArray, aeroAllMemorized%A_Index%, %A_Space%
-        if (tempArray1=active_id)
-        {
-          aeroAlreadyMemorizedAt := %A_Index%
-          break
-        }
-      } else break
-    if (aeroAlreadyMemorizedAt=0) ; we didn't find center memorized, so let's just move the window to x-center
+    if (aeroWidth <= minWidth)
     {
-      WinMove, %currentWindow%,, A_ScreenWidth/2 - aeroWidth/2, 0
+      WinMove, %currentWindow%,, (A_ScreenWidth - minWidth), 5, minWidth, intendedHeight
     }
-    else ; we found the center, so let's put the window at memorized center
+    else if (aeroWidth = medWidth)
     {
-       stringsplit, tempArray, aeroAllMemorized%aeroAlreadyMemorizedAt%, %A_Space%
-      WinMove, %currentWindow%,, tempArray2, tempArray3, tempArray4, tempArray5
+      WinMove, %currentWindow%,, 0, 0, minWidth, intendedHeight
+    }
+    else if (aeroWidth = maxWidth)
+    {
+      WinMove, %currentWindow%,, 0, 0, medWidth, intendedHeight
+    }
+    else
+    {
+      WinMove, %currentWindow%,, 0, 0, maxWidth, intendedHeight
     }
   }
-  else ; we have to memorize this "center" position
+  else
   {
-    aeroAlreadyMemorizedAt := 0 ; reset (not found memorized anywhere yet)
-    memoryBankSize = 0 ; reset
-    loop
-      if aeroAllMemorized%A_Index% ; we have to check if active ID already has a memory slot
-      {
-         memoryBankSize++
-        stringsplit, tempArray, aeroAllMemorized%A_Index%, %A_Space%
-        if (tempArray1=active_id)
-        {
-          aeroAlreadyMemorizedAt := %A_Index%
-          aeroAllMemorized%A_Index% := active_id . " " . aeroX . " " . aeroY . " " . aeroWidth . " " . aeroHeight
-          break
-        }
-      } else break
-    if (aeroAlreadyMemorizedAt=0) ; if we didn't find an old memory slot for this ID
-    {
-      memoryBankSize++ ; let's create a new memory slot
-      aeroAllMemorized%memoryBankSize% := active_id . " " . aeroX . " " . aeroY . " " . aeroWidth . " " . aeroHeight
-    }
-  WinMove, %currentWindow%,, 0, 0, (newWidth), (A_ScreenHeight-aeroTaskBarHeight)
+    WinMove, %currentWindow%,, 0, 0, maxWidth, intendedHeight
   }
 return
 
 #Right::
-  aeroTaskBarHeight := 26 ; put here the height of your taskbar
   WinGetTitle, currentWindow, A ; get the active window title
   WinGetPos, aeroX, aeroY, aeroWidth, aeroHeight, A ; get active window x,y,W,H
   WinGet, active_id, ID, A ; get active window ID (like 0xc00dc)
-  newWidth := 1160 ; A_ScreenWidth/3 * 2
+  
+  maxWidth := A_ScreenWidth / 3 * 2
+  medWidth := A_ScreenWidth / 2
+  minWidth := A_ScreenWidth / 3
 
-  ; / if window is already exactly at left
-  if (aeroX=0 && aeroY=0 && aeroWidth=(newWidth) && aeroHeight=(A_ScreenHeight-aeroTaskBarHeight))
+  intendedHeight := (A_ScreenHeight - 1)
+
+  if (aeroX + aeroWidth = A_ScreenWidth && aeroY = 0 && aeroHeight = intendedHeight)
   {
-    ; / let's check if we have the center position memorized..
-     aeroAlreadyMemorizedAt := 0 ; reset (not found memorized anywhere yet)
-    loop
-      if aeroAllMemorized%A_Index% ; we have to check if active ID already has a memory slot
-      { ; FYI: aeroAllMemorized[1..n] = "ID x y W H"
-        stringsplit, tempArray, aeroAllMemorized%A_Index%, %A_Space%
-        if (tempArray1=active_id)
-        {
-          aeroAlreadyMemorizedAt := %A_Index%
-          break
-        }
-      } else break
-    if (aeroAlreadyMemorizedAt=0) ; we didn't find center memorized, so let's just move the window to x-center
-    {
-      WinMove, %currentWindow%,, aeroWidth/2, 0
+    if (aeroWidth <= minWidth) {
+      WinMove, %currentWindow%,, 0, 0, minWidth, intendedHeight
     }
-    else ; we found the center, so let's put the window at memorized center
-    {
-       stringsplit, tempArray, aeroAllMemorized%aeroAlreadyMemorizedAt%, %A_Space%
-      WinMove, %currentWindow%,, tempArray2, tempArray3, tempArray4, tempArray5
+    else if (aeroWidth <= medWidth) {
+      WinMove, %currentWindow%,, A_ScreenWidth - minWidth, 0, minWidth, intendedHeight
+    }
+    else if (aeroWidth <= maxWidth) {
+      WinMove, %currentWindow%,, A_ScreenWidth - medWidth, 0, medWidth, intendedHeight
+    }
+    else {
+      WinMove, %currentWindow%,, A_ScreenWidth - maxWidth, 0, maxWidth, intendedHeight
     }
   }
-  ; / if window is exactly at right
-  else if (aeroX=(A_ScreenWidth - newWidth) && aeroY=0 && aeroWidth=(newWidth) && aeroHeight=(A_ScreenHeight-aeroTaskBarHeight))
-  {
-    WinMove, %currentWindow%,, 0, 0, (newWidth), (A_ScreenHeight-aeroTaskBarHeight)
-  }
-  else ; we have to memorize this "center" position
-  {
-    aeroAlreadyMemorizedAt := 0 ; reset (not found memorized anywhere yet)
-    memoryBankSize = 0 ; reset
-    loop
-      if aeroAllMemorized%A_Index% ; we have to check if active ID already has a memory slot
-      {
-        memoryBankSize++
-        stringsplit, tempArray, aeroAllMemorized%A_Index%, %A_Space%
-        if (tempArray1=active_id)
-        {
-          aeroAlreadyMemorizedAt := %A_Index%
-          aeroAllMemorized%A_Index% := active_id . " " . aeroX . " " . aeroY . " " . aeroWidth . " " . aeroHeight
-          break
-        }
-      } else break
-    if (aeroAlreadyMemorizedAt=0) ; if we didn't find an old memory slot for this ID
-    {
-      memoryBankSize++ ; let's create a new memory slot
-      aeroAllMemorized%memoryBankSize% := active_id . " " . aeroX . " " . aeroY . " " . aeroWidth . " " . aeroHeight
-    }
-  WinMove, %currentWindow%,, (A_ScreenWidth - newWidth), 0, (newWidth), (A_ScreenHeight-aeroTaskBarHeight)
+  else {
+    WinMove, %currentWindow%,, A_ScreenWidth - maxWidth, 0, maxWidth, intendedHeight
   }
 return
